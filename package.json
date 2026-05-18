@@ -1,0 +1,38 @@
+{
+  "name": "deskopilot",
+  "version": "0.0.1",
+  "description": "Desktop pet that reacts to system events (typing, AI agents, network, app focus).",
+  "main": "out/main/index.js",
+  "author": "Louis Liu",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pack": "electron-builder --dir",
+    "dist": "electron-vite build && electron-builder"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/node": "^22.10.0",
+    "@types/pngjs": "^6.0.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "pngjs": "^7.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "node-global-key-listener": "^0.3.0",
+    "pixi.js": "^8.6.5",
+    "systeminformation": "^5.31.6"
+  }
+}

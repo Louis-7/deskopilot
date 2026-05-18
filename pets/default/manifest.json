@@ -1,0 +1,24 @@
+{
+  "$schema": "deskopilot/pet-manifest@1",
+  "id": "default",
+  "name": "Default",
+  "version": "0.0.1",
+  "author": "deskopilot",
+  "spritesheet": {
+    "file": "spritesheet.png",
+    "cols": 8,
+    "rows": 9,
+    "frameWidth": 192,
+    "frameHeight": 208,
+    "rowMap": {
+      "idle":    { "row": 0, "frames": 6, "loopMs": 1100 },
+      "greet":   { "row": 1, "frames": 6, "loopMs": 900 },
+      "working": { "row": 2, "frames": 6, "loopMs": 700 },
+      "waiting": { "row": 3, "frames": 6, "loopMs": 1500 },
+      "review":  { "row": 4, "frames": 6, "loopMs": 1100 },
+      "failed":  { "row": 5, "frames": 6, "loopMs": 800 },
+      "success": { "row": 6, "frames": 6, "loopMs": 800 },
+      "jump":    { "row": 7, "frames": 6, "loopMs": 600 }
+    }
+  }
+}

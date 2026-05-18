@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>deskopilot</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        overflow: hidden;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #stage {
+        width: 100%;
+        height: 100%;
+        -webkit-app-region: drag;
+      }
+      #placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 12px -apple-system, sans-serif;
+        color: rgba(255, 255, 255, 0.85);
+        background: rgba(30, 30, 30, 0.6);
+        border-radius: 16px;
+        margin: 24px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="placeholder">deskopilot M0 ✓</div>
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>
