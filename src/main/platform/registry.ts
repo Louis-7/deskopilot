@@ -4,7 +4,7 @@ import { MockKeyboardSource } from './mock/keyboard.mock';
 import { KeyboardSourceMacOS } from './macos/keyboard.macos';
 import { FrontmostSourceMacOS } from './macos/frontmost.macos';
 import { AiAgentSourceMacOS } from './macos/ai-agent.macos';
-import { NetworkSourceMacOS } from './macos/network.macos';
+// import { NetworkSourceMacOS } from './macos/network.macos';  // disabled — re-enable here + in interpreter/rules/index.ts
 
 /**
  * Returns the event sources active for the current platform.
@@ -22,7 +22,6 @@ export function getEventSources(): EventSource[] {
       new KeyboardSourceMacOS(),
       new FrontmostSourceMacOS(),
       new AiAgentSourceMacOS(),
-      new NetworkSourceMacOS(),
     ];
   }
   if (platform === 'windows') {
