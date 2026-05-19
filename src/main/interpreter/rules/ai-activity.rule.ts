@@ -3,10 +3,9 @@ import type { PetIntent, RawSignal, Rule } from '@shared/types';
 const ACTIVE_WINDOW_MS = 3_000;
 const IDLE_THRESHOLD_MS = 10_000;
 // Total network throughput (bytes_in + bytes_out) for AI tools while actively
-// exchanging with a model. Outbound prompt bursts can be only a few KB/s, and
-// inbound streaming responses are often the larger fraction. 3 KB/s is low
-// enough to catch quiet outbound bursts without tripping on idle telemetry.
-const BYTES_PER_SEC_THRESHOLD = 3_000;
+// exchanging with a model. Cursor's background telemetry/sync sits around
+// 3 KB/s even when idle, so we sit above that floor.
+const BYTES_PER_SEC_THRESHOLD = 5_000;
 
 // Stateful: we remember whether we recently said "ai-working" and when the
 // last hot sample was seen, so we can fire "ai-finished" exactly once after
