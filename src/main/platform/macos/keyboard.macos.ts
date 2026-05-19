@@ -27,6 +27,11 @@ export class KeyboardSourceMacOS implements EventSource {
     this.timer = setInterval(() => {
       const keysPerSec = this.counter;
       this.counter = 0;
+      // Skip empty buckets — the typing rule infers "stopped typing" from the
+      // absence of recent signals (signals age out of its 2s window). Emitting
+      // zero-keys signals every 500ms while idle just floods the log without
+      // changing rule behavior.
+      if (keysPerSec === 0) return;
       emit({
         source: this.id,
         timestamp: Date.now(),
