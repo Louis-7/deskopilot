@@ -30,9 +30,9 @@ export class KeyboardSourceMacOS implements EventSource {
       emit({
         source: this.id,
         timestamp: Date.now(),
-        payload: { keysPerSec, sampledOver: 1_000 },
+        payload: { keysPerSec, sampledOver: 500 },
       });
-    }, 1_000);
+    }, 500);
   }
 
   async stop(): Promise<void> {

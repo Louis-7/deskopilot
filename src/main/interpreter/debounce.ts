@@ -9,9 +9,10 @@ import type { PetIntent } from '@shared/types';
  */
 export function sameIntent(a: PetIntent, b: PetIntent): boolean {
   if (a.kind !== b.kind) return false;
-  if (a.kind === 'user-typing' && b.kind === 'user-typing') {
-    return a.intensity === b.intensity;
-  }
+  // user-typing is never deduped: while the user is actively typing, the rule
+  // emits every tick, and the state machine needs to see each one so the greet
+  // animation re-triggers after each NON_INTERRUPTIBLE loop completes.
+  if (a.kind === 'user-typing') return false;
   if (a.kind === 'ai-working' && b.kind === 'ai-working') {
     return (a.agent ?? null) === (b.agent ?? null);
   }
