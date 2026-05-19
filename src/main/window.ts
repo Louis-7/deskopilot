@@ -1,7 +1,7 @@
 import { BrowserWindow, screen } from 'electron';
 import { join } from 'node:path';
 
-const WINDOW_SIZE = { width: 256, height: 256 };
+const WINDOW_SIZE = { width: 120, height: 120 };
 
 export function createPetWindow(): BrowserWindow {
   const { workArea } = screen.getPrimaryDisplay();
