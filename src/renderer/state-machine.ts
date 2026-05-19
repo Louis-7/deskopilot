@@ -4,6 +4,9 @@ import {
   type PetState,
   type Reducer,
 } from '@shared/types';
+import { getLogger } from './logger';
+
+const log = getLogger('state-machine');
 
 // =============================================================================
 // Pure reducer. No side effects, no timers, no IO. The full behavior of the
@@ -74,11 +77,14 @@ export class PetStateController {
   }
 
   dispatch(intent: PetIntent): PetState {
-    const next = reduce(this.currentState, intent);
-    if (next !== this.currentState) {
-      const prev = this.currentState;
+    const prev = this.currentState;
+    const next = reduce(prev, intent);
+    if (next !== prev) {
+      log.debug(`${prev} -> ${next}`, intent);
       this.currentState = next;
       for (const fn of this.listeners) fn(next, prev);
+    } else {
+      log.debug(`${prev} (no change)`, intent);
     }
     return next;
   }

@@ -20,10 +20,12 @@ export interface PipelineHandle {
  */
 export async function startEventPipeline(win: BrowserWindow): Promise<PipelineHandle> {
   let paused = false;
+  const intentLog = getLogger('interpreter');
 
   const interpreter = new Interpreter({
     rules: ALL_RULES,
     onIntent: (intent) => {
+      intentLog.debug('intent:', intent);
       if (paused || win.isDestroyed()) return;
       win.webContents.send(IPC.IntentToRenderer, intent);
     },
@@ -31,13 +33,17 @@ export async function startEventPipeline(win: BrowserWindow): Promise<PipelineHa
 
   const sources = getEventSources();
   await Promise.all(
-    sources.map((src) =>
-      src
-        .start((signal) => interpreter.ingest(signal))
+    sources.map((src) => {
+      const sourceLog = getLogger(`source:${src.id}`);
+      return src
+        .start((signal) => {
+          sourceLog.debug('signal:', signal.payload);
+          interpreter.ingest(signal);
+        })
         .catch((err) => {
-          getLogger(`source:${src.id}`).error('failed to start:', err);
-        }),
-    ),
+          sourceLog.error('failed to start:', err);
+        });
+    }),
   );
 
   interpreter.start();

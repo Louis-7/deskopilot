@@ -9,7 +9,8 @@
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-vite",
       "runtimeArgs": ["dev", "--sourcemap"],
       "env": {
-        "REMOTE_DEBUGGING_PORT": "9222"
+        "REMOTE_DEBUGGING_PORT": "9222",
+        "DESKOPILOT_LOG_LEVEL": "debug"
       },
       "console": "integratedTerminal",
       "outFiles": ["${workspaceFolder}/out/**/*.js"]
