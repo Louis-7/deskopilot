@@ -2,15 +2,20 @@ import type { PetIntent, RawSignal, Rule } from '@shared/types';
 
 const ACTIVE_WINDOW_MS = 3_000;
 const IDLE_THRESHOLD_MS = 10_000;
-const CPU_THRESHOLD = 10;
+// AI tool egress when actively streaming a model response is typically tens of
+// KB/s. Idle telemetry pings are well under 1 KB/s. 5 KB/s splits them cleanly.
+const BYTES_PER_SEC_THRESHOLD = 5_000;
 
-// Stateful: we remember whether we recently said "ai-working" so we can fire
-// "ai-finished" exactly once when activity stops, rather than every tick.
+// Stateful: we remember whether we recently said "ai-working" and when the
+// last hot sample was seen, so we can fire "ai-finished" exactly once after
+// activity quiets down. We can't infer "quiet" from the newest signal alone
+// because the source emits a heartbeat every poll even with zero traffic.
 let lastWasWorking = false;
+let lastHotAt: number | null = null;
 
 interface AgentSample {
   name: string;
-  cpu: number;
+  bytesPerSec: number;
 }
 
 export const aiActivityRule: Rule = {
@@ -19,16 +24,17 @@ export const aiActivityRule: Rule = {
   evaluate(window: readonly RawSignal[], now: number): PetIntent | null {
     const aiSignals = window.filter((s) => s.source === 'ai-agent');
     if (aiSignals.length === 0) {
-      // No data yet — neither working nor finished.
       return null;
     }
 
     const recent = aiSignals.filter((s) => now - s.timestamp <= ACTIVE_WINDOW_MS);
-    const hotAgents = recent.flatMap((s) => extractAgents(s.payload))
-      .filter((a) => a.cpu >= CPU_THRESHOLD);
+    const hotAgents = recent
+      .flatMap((s) => extractAgents(s.payload))
+      .filter((a) => a.bytesPerSec >= BYTES_PER_SEC_THRESHOLD);
 
     if (hotAgents.length > 0) {
       lastWasWorking = true;
+      lastHotAt = now;
       const pick = hotAgents[0];
       const intent: PetIntent = pick
         ? { kind: 'ai-working', agent: pick.name }
@@ -36,12 +42,9 @@ export const aiActivityRule: Rule = {
       return intent;
     }
 
-    // No hot agents recently — has it been long enough to call it finished?
-    const newestActivity = aiSignals[aiSignals.length - 1];
-    if (!newestActivity) return null;
-    const sinceLastActive = now - newestActivity.timestamp;
-    if (lastWasWorking && sinceLastActive >= IDLE_THRESHOLD_MS) {
+    if (lastWasWorking && lastHotAt !== null && now - lastHotAt >= IDLE_THRESHOLD_MS) {
       lastWasWorking = false;
+      lastHotAt = null;
       return { kind: 'ai-finished' };
     }
     return null;
@@ -56,8 +59,8 @@ function extractAgents(payload: Readonly<Record<string, unknown>>): AgentSample[
     if (typeof entry !== 'object' || entry === null) continue;
     const o = entry as Record<string, unknown>;
     const name = typeof o['name'] === 'string' ? o['name'] : null;
-    const cpu = typeof o['cpu'] === 'number' ? o['cpu'] : null;
-    if (name && cpu !== null) out.push({ name, cpu });
+    const bytesPerSec = typeof o['bytesPerSec'] === 'number' ? o['bytesPerSec'] : null;
+    if (name && bytesPerSec !== null) out.push({ name, bytesPerSec });
   }
   return out;
 }
@@ -65,4 +68,5 @@ function extractAgents(payload: Readonly<Record<string, unknown>>): AgentSample[
 // Test seam: reset the rule's stateful flag between test cases.
 export function _resetAiActivityRule(): void {
   lastWasWorking = false;
+  lastHotAt = null;
 }
