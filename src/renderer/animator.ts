@@ -1,5 +1,8 @@
 import { Rectangle, Sprite, Texture } from 'pixi.js';
 import type { PetState, SpritesheetSpec } from '@shared/types';
+import { getLogger } from './logger';
+
+const log = getLogger('animator');
 
 export interface AnimatorHooks {
   // Fires when the current state has played one full loop (loopMs elapsed).
@@ -32,7 +35,7 @@ export class Animator {
     const row = this.spec.rowMap[state];
     if (!row) {
       // Missing animation; fall back to idle so we never freeze the renderer.
-      console.warn(`[animator] pet has no row for state="${state}"; using idle`);
+      log.warn(`pet has no row for state="${state}"; using idle`);
       this.state = 'idle';
     } else {
       this.state = state;

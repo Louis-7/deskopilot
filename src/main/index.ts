@@ -4,6 +4,9 @@ import { handlePetProtocol, registerPetProtocolScheme } from './pet-protocol';
 import { attachIpc, sendActivePet } from './ipc';
 import { startEventPipeline, type PipelineHandle } from './runtime';
 import { createTray, destroyTray } from './tray';
+import { getLogger } from './logger';
+
+const log = getLogger('runtime');
 
 registerPetProtocolScheme();
 
@@ -25,7 +28,7 @@ app.whenReady().then(async () => {
   try {
     pipeline = await startEventPipeline(win);
   } catch (err) {
-    console.error('[runtime] failed to start event pipeline:', err);
+    log.error('failed to start event pipeline:', err);
   }
 
   if (pipeline) createTray({ window: win, pipeline });

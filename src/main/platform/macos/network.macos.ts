@@ -1,6 +1,9 @@
 import si from 'systeminformation';
 import type { EventSource } from '../source';
 import type { RawSignal } from '@shared/types';
+import { getLogger } from '../../logger';
+
+const log = getLogger('network');
 
 const POLL_MS = 1_000;
 
@@ -36,7 +39,7 @@ export class NetworkSourceMacOS implements EventSource {
           payload: { kbpsIn, kbpsOut },
         });
       } catch (err) {
-        console.warn('[network] poll failed:', (err as Error).message);
+        log.warn('poll failed:', (err as Error).message);
       }
     };
     this.timer = setInterval(poll, POLL_MS);

@@ -16,6 +16,9 @@ import {
   type PetRegistryEntry,
 } from './pets/registry';
 import type { PipelineHandle } from './runtime';
+import { getLogger } from './logger';
+
+const log = getLogger('tray');
 
 export interface TrayDeps {
   window: BrowserWindow;
@@ -62,7 +65,7 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
             await setActivePet(p.id);
             deps.window.webContents.send(IPC.LoadPet, { petId: p.id });
           } catch (err) {
-            console.error('[tray] setActivePet failed:', err);
+            log.error('setActivePet failed:', err);
           }
           await rebuild();
         },

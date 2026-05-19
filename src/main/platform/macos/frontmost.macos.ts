@@ -2,6 +2,9 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { EventSource } from '../source';
 import type { RawSignal } from '@shared/types';
+import { getLogger } from '../../logger';
+
+const log = getLogger('frontmost');
 
 const exec = promisify(execFile);
 const POLL_MS = 2_000;
@@ -34,7 +37,7 @@ export class FrontmostSourceMacOS implements EventSource {
           payload: { bundleId },
         });
       } catch (err) {
-        console.warn('[frontmost] poll failed:', (err as Error).message);
+        log.warn('poll failed:', (err as Error).message);
       }
     };
     await poll();

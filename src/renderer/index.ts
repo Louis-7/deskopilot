@@ -1,6 +1,9 @@
 import type { DeskopilotApi, PetIntent, PetState } from '@shared/types';
 import { createPetStage, type PetStageHandle } from './pet-stage';
 import { PetStateController } from './state-machine';
+import { getLogger } from './logger';
+
+const log = getLogger('pet');
 
 declare global {
   interface Window {
@@ -33,7 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
   window.deskopilot?.onIntent((intent) => controller.dispatch(intent));
   window.deskopilot?.onLoadPet(({ petId }) => {
     void loadPet(petId).catch((err) =>
-      console.error('[pet] failed to load pet:', petId, err),
+      log.error('failed to load pet:', petId, err),
     );
   });
 

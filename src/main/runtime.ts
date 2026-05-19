@@ -3,6 +3,7 @@ import { IPC } from '@shared/types';
 import { Interpreter } from './interpreter/interpreter';
 import { ALL_RULES } from './interpreter/rules';
 import { getEventSources } from './platform/registry';
+import { getLogger } from './logger';
 
 export interface PipelineHandle {
   stop(): Promise<void>;
@@ -34,7 +35,7 @@ export async function startEventPipeline(win: BrowserWindow): Promise<PipelineHa
       src
         .start((signal) => interpreter.ingest(signal))
         .catch((err) => {
-          console.error(`[source ${src.id}] failed to start:`, err);
+          getLogger(`source:${src.id}`).error('failed to start:', err);
         }),
     ),
   );

@@ -2,6 +2,9 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { EventSource } from '../source';
 import type { RawSignal } from '@shared/types';
+import { getLogger } from '../../logger';
+
+const log = getLogger('ai-agent');
 
 const execFileAsync = promisify(execFile);
 
@@ -71,7 +74,7 @@ export class AiAgentSourceMacOS implements EventSource {
         this.lastBytes = snapshot;
         this.lastSampleAt = now;
       } catch (err) {
-        console.warn('[ai-agent] poll failed:', (err as Error).message);
+        log.warn('poll failed:', (err as Error).message);
       }
     };
     await poll();
