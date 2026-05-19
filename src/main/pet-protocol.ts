@@ -1,8 +1,9 @@
 import { net, protocol } from 'electron';
 import { existsSync } from 'node:fs';
-import { join, normalize, sep } from 'node:path';
+import { dirname, join, normalize, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { builtinPetsDir, userPetsDir } from './pets/registry';
+import { loadPet } from './pets/loader';
 
 const SCHEME = 'pet';
 
@@ -40,9 +41,21 @@ export function handlePetProtocol(): void {
       const url = new URL(request.url);
       for (const root of roots) {
         const filePath = safeResolveIn(root, url);
-        if (filePath && existsSync(filePath)) {
-          return net.fetch(pathToFileURL(filePath).toString());
+        if (!filePath || !existsSync(filePath)) continue;
+
+        // Manifest requests go through the loader so the renderer sees the
+        // app's canonical PetState keys (typing/busy/...) instead of the raw
+        // codex-format keys (greet/jump/review) some pets ship with on disk.
+        // Streaming the file directly bypassed normalization and broke the
+        // animator lookups after the codex→app state mapping landed.
+        if (filePath.endsWith(`${sep}manifest.json`) || filePath.endsWith(`${sep}pet.json`)) {
+          const pet = await loadPet(dirname(filePath));
+          return new Response(JSON.stringify(pet.manifest), {
+            headers: { 'content-type': 'application/json' },
+          });
         }
+
+        return net.fetch(pathToFileURL(filePath).toString());
       }
       return new Response('not found', { status: 404 });
     } catch (err) {

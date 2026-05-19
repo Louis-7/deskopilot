@@ -79,8 +79,9 @@ describe('reduce', () => {
     });
   });
 
-  describe('NON_INTERRUPTIBLE states are interrupted only by user-typing', () => {
-    const blockedIntents: PetIntent[] = [
+  describe('NON_INTERRUPTIBLE states ignore non-animation-finished intents', () => {
+    const intents: PetIntent[] = [
+      { kind: 'user-typing', intensity: 'light' },
       { kind: 'ai-working' },
       { kind: 'ai-finished' },
       { kind: 'network-burst' },
@@ -90,14 +91,11 @@ describe('reduce', () => {
       { kind: 'context-switch', toBundleId: 'x' },
     ];
     for (const state of [...NON_INTERRUPTIBLE]) {
-      for (const intent of blockedIntents) {
+      for (const intent of intents) {
         it(`${state} + ${intent.kind} → ${state}`, () => {
           expect(reduce(state, intent)).toBe(state);
         });
       }
-      it(`${state} + user-typing → typing (always interrupts)`, () => {
-        expect(reduce(state, { kind: 'user-typing', intensity: 'light' })).toBe('typing');
-      });
     }
   });
 
@@ -137,12 +135,12 @@ describe('PetStateController', () => {
     expect(seen).toEqual(['idle->working', 'working->success']);
   });
 
-  it('honors the one-shot lock end-to-end, except for user-typing', () => {
+  it('honors the one-shot lock end-to-end', () => {
     const c = new PetStateController('idle');
     c.dispatch({ kind: 'user-typing', intensity: 'light' });
     expect(c.state).toBe('typing');
 
-    // While in typing, non-typing intents are ignored (NON_INTERRUPTIBLE).
+    // While in typing, no intent (except animation-finished) escapes.
     c.dispatch({ kind: 'ai-working' });
     expect(c.state).toBe('typing');
 
@@ -151,9 +149,5 @@ describe('PetStateController', () => {
 
     c.dispatch({ kind: 'ai-working' });
     expect(c.state).toBe('working');
-
-    // user-typing interrupts even working.
-    c.dispatch({ kind: 'user-typing', intensity: 'heavy' });
-    expect(c.state).toBe('typing');
   });
 });
