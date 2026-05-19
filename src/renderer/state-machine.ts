@@ -33,9 +33,7 @@ export const reduce: Reducer = (state, intent) => {
 
   switch (intent.kind) {
     case 'user-typing':
-      // Only greet from idle; if we're already working, typing shouldn't yank
-      // the pet out of its working animation.
-      return state === 'idle' ? 'greet' : state;
+      return 'greet';
 
     case 'ai-working':
       return 'working';
