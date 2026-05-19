@@ -58,7 +58,7 @@ describe('loadPet', () => {
     expect(pet.manifest.spritesheet.rowMap.idle).toEqual({ row: 0, frames: 6, loopMs: 1100 });
     expect(pet.manifest.spritesheet.rowMap.working).toEqual({ row: 2, frames: 6, loopMs: 700 });
     // Defaults filled in for states the author didn't specify
-    expect(pet.manifest.spritesheet.rowMap.greet).toBeDefined();
+    expect(pet.manifest.spritesheet.rowMap.typing).toBeDefined();
     expect(pet.hashes.manifest).toMatch(/^[a-f0-9]{64}$/);
     expect(pet.hashes.spritesheet).toMatch(/^[a-f0-9]{64}$/);
   });
@@ -84,7 +84,8 @@ describe('loadPet', () => {
     expect(pet.manifest.spritesheet.frameWidth).toBe(192);
     expect(pet.manifest.spritesheet.frameHeight).toBe(208);
     expect(pet.manifest.spritesheet.rowMap.idle?.row).toBe(0);
-    expect(pet.manifest.spritesheet.rowMap.jump?.row).toBe(7);
+    // Codex row 7 (`jump` in petdex) gets translated to our `busy` state.
+    expect(pet.manifest.spritesheet.rowMap.busy?.row).toBe(7);
   });
 
   it('infers the spritesheet filename when the manifest omits it', async () => {
@@ -105,7 +106,7 @@ describe('loadPet', () => {
         name: 'Evil',
         spritesheet: { file: 'spritesheet.png' },
         // ⚠ this is the kind of field we explicitly do not allow
-        transitions: { 'user-typing': 'jump' },
+        transitions: { 'user-typing': 'busy' },
       }),
       'spritesheet.png': TINY_PNG,
     });

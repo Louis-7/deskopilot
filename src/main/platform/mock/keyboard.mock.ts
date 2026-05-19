@@ -3,7 +3,7 @@ import type { RawSignal } from '@shared/types';
 
 /**
  * Dev-time stand-in for the real keyboard source. Emits a synthetic keyboard
- * signal every second so the pet shows a `greet` reaction without needing
+ * signal every second so the pet shows a `typing` reaction without needing
  * macOS Input Monitoring permission. Cycles intensity so the demo is visible.
  */
 export class MockKeyboardSource implements EventSource {

@@ -4,14 +4,14 @@ import { NON_INTERRUPTIBLE } from '@shared/types';
 import { PetStateController, reduce } from './state-machine';
 
 const ALL_STATES: PetState[] = [
-  'idle', 'greet', 'working', 'waiting', 'review', 'failed', 'success', 'jump',
+  'idle', 'typing', 'working', 'waiting', 'failed', 'success', 'busy',
 ];
 
 describe('reduce', () => {
   describe('from idle', () => {
-    it('user-typing → greet', () => {
-      expect(reduce('idle', { kind: 'user-typing', intensity: 'light' })).toBe('greet');
-      expect(reduce('idle', { kind: 'user-typing', intensity: 'heavy' })).toBe('greet');
+    it('user-typing → typing', () => {
+      expect(reduce('idle', { kind: 'user-typing', intensity: 'light' })).toBe('typing');
+      expect(reduce('idle', { kind: 'user-typing', intensity: 'heavy' })).toBe('typing');
     });
 
     it('ai-working → working', () => {
@@ -22,8 +22,8 @@ describe('reduce', () => {
       expect(reduce('idle', { kind: 'ai-finished' })).toBe('idle');
     });
 
-    it('network-burst → jump', () => {
-      expect(reduce('idle', { kind: 'network-burst' })).toBe('jump');
+    it('network-burst → busy', () => {
+      expect(reduce('idle', { kind: 'network-burst' })).toBe('busy');
     });
 
     it('idle-too-long → waiting', () => {
@@ -44,8 +44,8 @@ describe('reduce', () => {
   });
 
   describe('from working', () => {
-    it('user-typing → working (stays, does not yank to greet)', () => {
-      expect(reduce('working', { kind: 'user-typing', intensity: 'light' })).toBe('working');
+    it('user-typing → typing (typing interrupts every state)', () => {
+      expect(reduce('working', { kind: 'user-typing', intensity: 'light' })).toBe('typing');
     });
 
     it('ai-working → working', () => {
@@ -56,7 +56,7 @@ describe('reduce', () => {
       expect(reduce('working', { kind: 'ai-finished' })).toBe('success');
     });
 
-    it('network-burst → working (stays)', () => {
+    it('network-burst → working (only fires from idle)', () => {
       expect(reduce('working', { kind: 'network-burst' })).toBe('working');
     });
 
@@ -74,14 +74,13 @@ describe('reduce', () => {
       expect(reduce('waiting', { kind: 'ai-working' })).toBe('working');
     });
 
-    it('user-typing → waiting (stays — only idle triggers greet)', () => {
-      expect(reduce('waiting', { kind: 'user-typing', intensity: 'light' })).toBe('waiting');
+    it('user-typing → typing (typing interrupts every state)', () => {
+      expect(reduce('waiting', { kind: 'user-typing', intensity: 'light' })).toBe('typing');
     });
   });
 
-  describe('NON_INTERRUPTIBLE states ignore non-animation-finished intents', () => {
-    const intents: PetIntent[] = [
-      { kind: 'user-typing', intensity: 'light' },
+  describe('NON_INTERRUPTIBLE states are interrupted only by user-typing', () => {
+    const blockedIntents: PetIntent[] = [
       { kind: 'ai-working' },
       { kind: 'ai-finished' },
       { kind: 'network-burst' },
@@ -91,11 +90,14 @@ describe('reduce', () => {
       { kind: 'context-switch', toBundleId: 'x' },
     ];
     for (const state of [...NON_INTERRUPTIBLE]) {
-      for (const intent of intents) {
+      for (const intent of blockedIntents) {
         it(`${state} + ${intent.kind} → ${state}`, () => {
           expect(reduce(state, intent)).toBe(state);
         });
       }
+      it(`${state} + user-typing → typing (always interrupts)`, () => {
+        expect(reduce(state, { kind: 'user-typing', intensity: 'light' })).toBe('typing');
+      });
     }
   });
 
@@ -105,7 +107,7 @@ describe('reduce', () => {
         expect(reduce(state, { kind: 'animation-finished', from: state })).toBe('idle');
       });
       it(`${state} ignores animation-finished from a different state`, () => {
-        const other = state === 'greet' ? 'jump' : 'greet';
+        const other = state === 'typing' ? 'busy' : 'typing';
         expect(reduce(state, { kind: 'animation-finished', from: other })).toBe(state);
       });
     }
@@ -135,19 +137,23 @@ describe('PetStateController', () => {
     expect(seen).toEqual(['idle->working', 'working->success']);
   });
 
-  it('honors the one-shot lock end-to-end', () => {
+  it('honors the one-shot lock end-to-end, except for user-typing', () => {
     const c = new PetStateController('idle');
     c.dispatch({ kind: 'user-typing', intensity: 'light' });
-    expect(c.state).toBe('greet');
+    expect(c.state).toBe('typing');
 
-    // While in greet, no intent (except animation-finished) escapes
+    // While in typing, non-typing intents are ignored (NON_INTERRUPTIBLE).
     c.dispatch({ kind: 'ai-working' });
-    expect(c.state).toBe('greet');
+    expect(c.state).toBe('typing');
 
-    c.dispatch({ kind: 'animation-finished', from: 'greet' });
+    c.dispatch({ kind: 'animation-finished', from: 'typing' });
     expect(c.state).toBe('idle');
 
     c.dispatch({ kind: 'ai-working' });
     expect(c.state).toBe('working');
+
+    // user-typing interrupts even working.
+    c.dispatch({ kind: 'user-typing', intensity: 'heavy' });
+    expect(c.state).toBe('typing');
   });
 });

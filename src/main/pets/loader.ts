@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import {
   CODEX_ATLAS,
   CODEX_DEFAULT_ROW_MAP,
+  CODEX_STATE_MAP,
 } from '@shared/atlas-spec';
 import type {
   AnimationRow,
@@ -162,24 +163,28 @@ function normalizeRowMap(
   root: string,
 ): Partial<Record<PetState, AnimationRow>> {
   const out: Partial<Record<PetState, AnimationRow>> = {};
-  for (const [state, value] of Object.entries(raw)) {
+  for (const [rawKey, value] of Object.entries(raw)) {
     if (!isRecord(value)) continue;
+    // Translate codex state names (greet, jump, review, ...) into this app's
+    // PetState vocabulary. Unknown keys and keys mapped to null (e.g. codex
+    // `review`) are silently skipped so Codex-format pets load cleanly.
+    const state = resolvePetState(rawKey);
+    if (!state) continue;
     const row = numField(value, 'row', -1);
     if (row < 0 || row >= rows) {
       throw new PetLoadError(
-        `rowMap["${state}"].row=${row} is out of range (0..${rows - 1})`,
+        `rowMap["${rawKey}"].row=${row} is out of range (0..${rows - 1})`,
         root,
       );
     }
     const frames = numField(value, 'frames', CODEX_ATLAS.framesPerState);
     if (frames < 1 || frames > cols) {
       throw new PetLoadError(
-        `rowMap["${state}"].frames=${frames} must be in 1..${cols}`,
+        `rowMap["${rawKey}"].frames=${frames} must be in 1..${cols}`,
         root,
       );
     }
     const loopMs = numField(value, 'loopMs', CODEX_ATLAS.loopMs);
-    if (!isPetState(state)) continue;
     out[state] = { row, frames, loopMs };
   }
   // Fall back to defaults for any state the author didn't supply.
@@ -204,10 +209,20 @@ function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null && !Array.isArray(x);
 }
 
+// Resolves a manifest rowMap key (either a current PetState name or a codex
+// alias like `greet`/`jump`) into the canonical PetState. Returns null for
+// unknown keys and for codex states that have no app equivalent (e.g.
+// `review`), so the caller can skip them.
+function resolvePetState(key: string): PetState | null {
+  if (isPetState(key)) return key;
+  const mapped = CODEX_STATE_MAP[key];
+  return mapped ?? null;
+}
+
 function isPetState(x: string): x is PetState {
   return (
-    x === 'idle' || x === 'greet' || x === 'working' || x === 'waiting' ||
-    x === 'review' || x === 'failed' || x === 'success' || x === 'jump'
+    x === 'idle' || x === 'typing' || x === 'working' || x === 'waiting' ||
+    x === 'failed' || x === 'success' || x === 'busy'
   );
 }
 

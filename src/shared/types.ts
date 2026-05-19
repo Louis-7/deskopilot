@@ -52,23 +52,29 @@ export interface Rule {
 // Layer 3 : PetState + Reducer (pure)
 // =============================================================================
 
+// The app's canonical state vocabulary. Codex Pets ship with 8 state rows
+// (greet/jump/review etc.); the loader translates those to this set via
+// CODEX_STATE_MAP in src/shared/atlas-spec.ts. Renderer + reducer only ever
+// see these names.
 export type PetState =
   | 'idle'
-  | 'greet'
+  | 'typing'
   | 'working'
   | 'waiting'
-  | 'review'
   | 'failed'
   | 'success'
-  | 'jump';
+  | 'busy';
 
 export type Reducer = (state: PetState, intent: PetIntent) => PetState;
 
 // States that play their full loop before they can be overridden by a new
 // intent. The animator emits `animation-finished` when the loop completes.
+// `typing` is in the set so the wave-style reaction completes once instead of
+// snapping back to idle mid-frame; user-typing is still allowed to interrupt
+// any state (handled explicitly in the reducer).
 export const NON_INTERRUPTIBLE: ReadonlySet<PetState> = new Set([
-  'greet',
-  'jump',
+  'typing',
+  'busy',
   'success',
   'failed',
 ]);

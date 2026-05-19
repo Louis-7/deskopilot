@@ -10,11 +10,12 @@ const log = getLogger('state-machine');
 
 // =============================================================================
 // Pure reducer. No side effects, no timers, no IO. The full behavior of the
-// pet — when it greets, when it works, when it idles — lives here.
+// pet — when it reacts to typing, when it works, when it idles — lives here.
 //
-// One-shot states (greet/jump/success/failed) play to completion before
-// accepting new intents. The animator emits `animation-finished` when a loop
-// finishes, which is the only way out of them.
+// One-shot states (typing/busy/success/failed) play to completion before
+// accepting new intents, with one exception: `user-typing` is always allowed
+// to interrupt so a keystroke during a celebration still feels responsive.
+// The animator emits `animation-finished` when a loop finishes.
 // =============================================================================
 
 export const reduce: Reducer = (state, intent) => {
@@ -33,7 +34,7 @@ export const reduce: Reducer = (state, intent) => {
 
   switch (intent.kind) {
     case 'user-typing':
-      return 'greet';
+      return 'typing';
 
     case 'ai-working':
       return 'working';
@@ -42,7 +43,7 @@ export const reduce: Reducer = (state, intent) => {
       return state === 'working' ? 'success' : state;
 
     case 'network-burst':
-      return state === 'idle' ? 'jump' : state;
+      return state === 'idle' ? 'busy' : state;
 
     case 'idle-too-long':
       return state === 'idle' ? 'waiting' : state;
