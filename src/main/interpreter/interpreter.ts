@@ -1,5 +1,8 @@
 import type { PetIntent, RawSignal, Rule } from '@shared/types';
 import { sameIntent } from './debounce';
+import { getLogger } from '../logger';
+
+const log = getLogger('interpreter');
 
 export interface InterpreterOptions {
   rules: readonly Rule[];
@@ -41,14 +44,28 @@ export class Interpreter {
     this.trim();
   }
 
+  // Called when the state machine actually transitions. Dedup memory only
+  // exists to suppress *redundant* emits — once the state machine has moved,
+  // the next emit (even if "same kind" as the last one we sent) carries new
+  // meaning and must reach the reducer.
+  clearDedup(): void {
+    this.lastEmitted = null;
+  }
+
   /** Force one evaluation tick. Used by tests; the timer does the same. */
   tick(): void {
     this.trim();
     const now = this.now();
     for (const rule of this.rules) {
       const intent = rule.evaluate(this.buffer, now);
-      if (!intent) continue;
-      if (this.lastEmitted && sameIntent(this.lastEmitted, intent)) continue;
+      if (!intent) {
+        log.debug(`rule '${rule.id}' produced no intent`);
+        continue;
+      }
+      if (this.lastEmitted && sameIntent(this.lastEmitted, intent)) {
+        log.debug(`rule '${rule.id}' deduped intent (same as last):`, intent);
+        continue;
+      }
       this.lastEmitted = intent;
       this.onIntent(intent);
       return; // first rule wins per tick — see ALL_RULES ordering

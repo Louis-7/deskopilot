@@ -59,6 +59,21 @@ describe('Interpreter', () => {
     expect(emitted.map((i) => i.kind)).toEqual(['ai-working', 'ai-finished']);
   });
 
+  it('clearDedup() lets the next identical intent through', () => {
+    const emitted: PetIntent[] = [];
+    const interp = new Interpreter({
+      rules: [constRule('one', { kind: 'ai-working', agent: 'x' })],
+      onIntent: (i) => emitted.push(i),
+      now: () => 1000,
+      tickMs: 9999,
+    });
+    interp.tick();
+    interp.tick(); // deduped
+    interp.clearDedup();
+    interp.tick(); // dedup memory cleared → emits again
+    expect(emitted.length).toBe(2);
+  });
+
   it('drops signals older than windowMs', () => {
     let now = 1000;
     let seen: number | null = null;

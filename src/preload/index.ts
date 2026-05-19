@@ -24,6 +24,9 @@ const api: DeskopilotApi = {
   devSendIntent(intent) {
     ipcRenderer.send(IPC.DevtoolsIntent, intent);
   },
+  notifyStateChange(next, prev) {
+    ipcRenderer.send(IPC.StateChange, next, prev);
+  },
 };
 
 contextBridge.exposeInMainWorld('deskopilot', api);

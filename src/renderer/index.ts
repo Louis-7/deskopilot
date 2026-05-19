@@ -32,7 +32,10 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('placeholder')?.remove();
   }
 
-  controller.subscribe((next) => handle?.setState(next));
+  controller.subscribe((next, prev) => {
+    handle?.setState(next);
+    window.deskopilot?.notifyStateChange(next, prev);
+  });
   window.deskopilot?.onIntent((intent) => controller.dispatch(intent));
   window.deskopilot?.onLoadPet(({ petId }) => {
     void loadPet(petId).catch((err) =>

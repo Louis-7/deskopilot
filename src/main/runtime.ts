@@ -1,5 +1,5 @@
-import type { BrowserWindow } from 'electron';
-import { IPC } from '@shared/types';
+import { ipcMain, type BrowserWindow } from 'electron';
+import { IPC, type PetState } from '@shared/types';
 import { Interpreter } from './interpreter/interpreter';
 import { ALL_RULES } from './interpreter/rules';
 import { getEventSources } from './platform/registry';
@@ -48,8 +48,19 @@ export async function startEventPipeline(win: BrowserWindow): Promise<PipelineHa
 
   interpreter.start();
 
+  // Renderer notifies us every time its state machine actually transitions.
+  // We clear the interpreter's dedup memory so intents the reducer had to
+  // ignore (e.g. ai-working emitted while typing was NON_INTERRUPTIBLE) don't
+  // suppress the next legitimate emit of the same kind.
+  const onStateChange = (_evt: unknown, next: PetState, prev: PetState): void => {
+    intentLog.debug(`state-change ${prev} -> ${next}, clearing dedup`);
+    interpreter.clearDedup();
+  };
+  ipcMain.on(IPC.StateChange, onStateChange);
+
   return {
     async stop() {
+      ipcMain.off(IPC.StateChange, onStateChange);
       interpreter.stop();
       await Promise.all(sources.map((s) => s.stop().catch(() => {})));
     },

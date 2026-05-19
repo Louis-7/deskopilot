@@ -118,6 +118,11 @@ export const IPC = {
   IntentToRenderer: 'deskopilot:intent',
   LoadPet: 'deskopilot:load-pet',
   DevtoolsIntent: 'deskopilot:devtools-intent', // for manual injection in dev
+  // Renderer → main: emitted whenever PetStateController actually transitions.
+  // Main uses this to clear interpreter dedup memory so an intent the state
+  // machine had to ignore (e.g. while typing was NON_INTERRUPTIBLE) doesn't
+  // poison future dedup decisions.
+  StateChange: 'deskopilot:state-change',
 } as const;
 
 // =============================================================================
@@ -134,4 +139,5 @@ export interface DeskopilotApi {
   onIntent(handler: (intent: PetIntent) => void): () => void;
   onLoadPet(handler: (msg: LoadPetMessage) => void): () => void;
   devSendIntent(intent: PetIntent): void;
+  notifyStateChange(next: PetState, prev: PetState): void;
 }
