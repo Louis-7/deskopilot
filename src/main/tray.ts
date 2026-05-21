@@ -34,7 +34,7 @@ export function createTray(deps: TrayDeps): Tray {
   icon.setTemplateImage(true);
 
   tray = new Tray(icon);
-  tray.setToolTip('deskopilot');
+  tray.setToolTip('Deskopilot');
 
   const rebuild = async (): Promise<void> => {
     if (!tray) return;
@@ -71,7 +71,7 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
     : [{ label: 'No pets installed', enabled: false }];
 
   return Menu.buildFromTemplate([
-    { label: `deskopilot · ${activeId}`, enabled: false },
+    { label: `Deskopilot · ${activeId}`, enabled: false },
     { type: 'separator' },
     { label: 'Pet', submenu: petsSubmenu },
     { type: 'separator' },
