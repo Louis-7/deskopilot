@@ -1,0 +1,4 @@
+provider: github
+owner: Louis-7
+repo: deskopilot
+releaseType: prerelease

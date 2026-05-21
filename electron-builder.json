@@ -1,0 +1,42 @@
+{
+  "appId": "com.deskopilot.app",
+  "productName": "deskopilot",
+  "copyright": "Copyright © 2026 Louis Liu",
+  "directories": {
+    "output": "build",
+    "buildResources": "resources"
+  },
+  "afterSign": "scripts/notarize.cjs",
+  "afterAllArtifactBuild": "scripts/staple.cjs",
+  "files": [
+    "out/**/*",
+    "resources/**/*",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": "pets/default",
+      "to": "pets/default",
+      "filter": ["**/*"]
+    }
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "resources/entitlements.mac.plist",
+    "entitlementsInherit": "resources/entitlements.mac.plist",
+    "target": [
+      { "target": "dmg" },
+      { "target": "zip" }
+    ],
+    "extendInfo": {
+      "LSUIElement": true,
+      "NSAppleEventsUsageDescription": "deskopilot reads which app is in focus."
+    }
+  },
+  "dmg": {
+    "artifactName": "${productName}-${version}-${arch}.dmg"
+  },
+  "asar": true
+}
