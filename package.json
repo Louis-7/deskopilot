@@ -1,6 +1,6 @@
 {
   "name": "deskopilot",
-  "version": "0.0.0",
+  "version": "0.0.1-beta.1",
   "description": "Desktop pet that reacts to system events (typing, AI agents, network, app focus).",
   "main": "out/main/index.js",
   "author": "Louis Liu",
