@@ -31,7 +31,7 @@ app.whenReady().then(async () => {
     log.error('failed to start event pipeline:', err);
   }
 
-  if (pipeline) createTray({ window: win, pipeline });
+  createTray({ window: win });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createPetWindow();

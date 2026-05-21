@@ -15,14 +15,12 @@ import {
   userPetsDir,
   type PetRegistryEntry,
 } from './pets/registry';
-import type { PipelineHandle } from './runtime';
 import { getLogger } from './logger';
 
 const log = getLogger('tray');
 
 export interface TrayDeps {
   window: BrowserWindow;
-  pipeline: PipelineHandle;
 }
 
 let tray: Tray | null = null;
@@ -76,13 +74,6 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
     { label: `deskopilot · ${activeId}`, enabled: false },
     { type: 'separator' },
     { label: 'Pet', submenu: petsSubmenu },
-    {
-      label: deps.pipeline.isPaused() ? 'Resume reacting' : 'Pause reacting',
-      click: async () => {
-        deps.pipeline.setPaused(!deps.pipeline.isPaused());
-        await rebuild();
-      },
-    },
     { type: 'separator' },
     {
       label: 'Open pets folder…',

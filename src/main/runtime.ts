@@ -7,26 +7,20 @@ import { getLogger } from './logger';
 
 export interface PipelineHandle {
   stop(): Promise<void>;
-  setPaused(paused: boolean): void;
-  isPaused(): boolean;
 }
 
 /**
  * Boots layers 1 and 2: starts platform event sources, feeds them into the
  * interpreter, and forwards every emitted PetIntent to the renderer via IPC.
- *
- * Pausing keeps event sources alive (so we don't re-trigger permission prompts
- * on resume) but suppresses IPC delivery to the renderer.
  */
 export async function startEventPipeline(win: BrowserWindow): Promise<PipelineHandle> {
-  let paused = false;
   const intentLog = getLogger('interpreter');
 
   const interpreter = new Interpreter({
     rules: ALL_RULES,
     onIntent: (intent) => {
       intentLog.debug('intent:', intent);
-      if (paused || win.isDestroyed()) return;
+      if (win.isDestroyed()) return;
       win.webContents.send(IPC.IntentToRenderer, intent);
     },
   });
@@ -63,12 +57,6 @@ export async function startEventPipeline(win: BrowserWindow): Promise<PipelineHa
       ipcMain.off(IPC.StateChange, onStateChange);
       interpreter.stop();
       await Promise.all(sources.map((s) => s.stop().catch(() => {})));
-    },
-    setPaused(next) {
-      paused = next;
-    },
-    isPaused() {
-      return paused;
     },
   };
 }
