@@ -10,7 +10,7 @@
       "runtimeArgs": ["dev", "--sourcemap"],
       "env": {
         "REMOTE_DEBUGGING_PORT": "9222",
-        "DESKOPILOT_LOG_LEVEL": "debug"
+        "LOG_LEVEL": "debug"
       },
       "console": "integratedTerminal",
       "outFiles": ["${workspaceFolder}/out/**/*.js"]
