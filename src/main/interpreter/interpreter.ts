@@ -33,7 +33,7 @@ export class Interpreter {
 
   constructor(opts: InterpreterOptions) {
     this.rules = opts.rules;
-    this.windowMs = opts.windowMs ?? 10_000;
+    this.windowMs = opts.windowMs ?? 40_000;
     this.tickMs = opts.tickMs ?? 250;
     this.onIntent = opts.onIntent;
     this.now = opts.now ?? Date.now;
