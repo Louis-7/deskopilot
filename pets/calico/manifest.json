@@ -6,8 +6,8 @@
     "file": "spritesheet.webp",
     "cols": 9,
     "rows": 7,
-    "frameWidth": 96,
-    "frameHeight": 96,
+    "frameWidth": 192,
+    "frameHeight": 192,
     "rowMap": {
       "idle":    { "row": 0, "frames": 8, "loopMs": 1600 },
       "typing":  { "row": 1, "frames": 9, "loopMs": 1800 },
