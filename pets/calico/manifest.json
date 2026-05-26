@@ -1,0 +1,21 @@
+{
+  "id": "calico",
+  "name": "Calico",
+  "description": "A calm calico cat that sits with you while you work.",
+  "spritesheet": {
+    "file": "spritesheet.webp",
+    "cols": 9,
+    "rows": 7,
+    "frameWidth": 96,
+    "frameHeight": 96,
+    "rowMap": {
+      "idle":    { "row": 0, "frames": 8, "loopMs": 1600 },
+      "typing":  { "row": 1, "frames": 9, "loopMs": 1800 },
+      "working": { "row": 2, "frames": 9, "loopMs": 1800 },
+      "waiting": { "row": 3, "frames": 9, "loopMs": 1800 },
+      "busy":    { "row": 4, "frames": 9, "loopMs": 1800 },
+      "failed":  { "row": 5, "frames": 9, "loopMs": 1800 },
+      "success": { "row": 6, "frames": 9, "loopMs": 1800 }
+    }
+  }
+}
