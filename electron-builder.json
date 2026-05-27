@@ -38,5 +38,6 @@
   "dmg": {
     "artifactName": "${productName}-${version}-${arch}.dmg"
   },
-  "asar": true
+  "asar": true,
+  "npmRebuild": false
 }
