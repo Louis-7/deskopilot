@@ -2,6 +2,9 @@ import { app } from 'electron';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { getLogger } from './logger';
+
+const log = getLogger('settings');
 
 export interface UpdateSettings {
   allowPrerelease: boolean;
@@ -23,7 +26,7 @@ function defaults(): AppSettings {
     version: 1,
     update: {
       allowPrerelease: true,
-      autoCheckOnStartup: true,
+      autoCheckOnStartup: false,
       skippedVersion: null,
     },
   };
@@ -51,7 +54,17 @@ function normalize(parsed: unknown): AppSettings {
 
 export async function loadSettings(): Promise<AppSettings> {
   const path = settingsPath();
-  if (!existsSync(path)) return defaults();
+  if (!existsSync(path)) {
+    const seeded = defaults();
+    try {
+      await saveSettings(seeded);
+    } catch (err) {
+      // Best-effort seed; loading defaults still works in-memory if the
+      // userData dir isn't writable for some reason.
+      log.error('failed to seed settings.json:', err);
+    }
+    return seeded;
+  }
   try {
     const raw = await readFile(path, 'utf8');
     return normalize(JSON.parse(raw));
@@ -62,8 +75,13 @@ export async function loadSettings(): Promise<AppSettings> {
 
 export async function saveSettings(next: AppSettings): Promise<void> {
   const path = settingsPath();
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, JSON.stringify(next, null, 2), 'utf8');
+  try {
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, JSON.stringify(next, null, 2), 'utf8');
+  } catch (err) {
+    log.error(`failed to save settings.json at ${path}:`, err);
+    throw err;
+  }
 }
 
 export async function updateSettings(patch: { update?: Partial<UpdateSettings> }): Promise<AppSettings> {
