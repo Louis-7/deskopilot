@@ -15,7 +15,13 @@ import {
   userPetsDir,
   type PetRegistryEntry,
 } from './pets/registry';
-import { checkForUpdates } from './updater';
+import {
+  checkForUpdates,
+  getUpdaterState,
+  onUpdaterStateChange,
+  showUpdatePrompt,
+  showInstallPrompt,
+} from './updater';
 import { getLogger } from './logger';
 
 const log = getLogger('tray');
@@ -43,6 +49,8 @@ export function createTray(deps: TrayDeps): Tray {
   };
   void rebuild();
 
+  onUpdaterStateChange(() => void rebuild());
+
   tray.on('right-click', () => void rebuild());
   tray.on('click', () => void rebuild());
 
@@ -53,6 +61,25 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
   const reg = await loadRegistry();
   const pets = collectPets(reg.pets);
   const activeId = reg.activePetId;
+  const updState = getUpdaterState();
+
+  function updaterMenuItem(): MenuItemConstructorOptions {
+    switch (updState.phase) {
+      case 'checking':
+        return { label: 'Checking for Updates…', enabled: false };
+      case 'update-available':
+        return {
+          label: `Update Available (v${updState.version})`,
+          click: () => void showUpdatePrompt(),
+        };
+      case 'downloading':
+        return { label: `Downloading… ${Math.round(updState.percent)}%`, enabled: false };
+      case 'downloaded':
+        return { label: 'Restart to Update', click: () => void showInstallPrompt() };
+      default:
+        return { label: 'Check for Updates…', click: () => void checkForUpdates({ silent: false }) };
+    }
+  }
 
   const petsSubmenu: MenuItemConstructorOptions[] = pets.length
     ? pets.map((p) => ({
@@ -83,12 +110,7 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
       },
     },
     { type: 'separator' },
-    {
-      label: 'Check for Updates…',
-      click: () => {
-        void checkForUpdates({ silent: false });
-      },
-    },
+    updaterMenuItem(),
     { type: 'separator' },
     { label: 'Quit deskopilot', role: 'quit' },
   ]);

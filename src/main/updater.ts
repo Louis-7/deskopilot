@@ -10,7 +10,40 @@ const DEV_UPDATE_CONFIG = 'dev-app-update.yml';
 const log = getLogger('updater');
 
 let initialized = false;
-let currentCheckSilent = true;
+
+interface UpdaterState {
+  phase: 'idle' | 'checking' | 'update-available' | 'downloading' | 'downloaded';
+  silent: boolean;
+  version: string | null;
+  percent: number;
+}
+
+let state: UpdaterState = { phase: 'idle', silent: true, version: null, percent: 0 };
+let pendingInfo: UpdateInfo | null = null;
+let stateChangeCallback: (() => void) | null = null;
+
+function setState(next: Partial<UpdaterState>): void {
+  state = { ...state, ...next };
+  stateChangeCallback?.();
+}
+
+export function getUpdaterState(): Readonly<UpdaterState> {
+  return state;
+}
+
+export function onUpdaterStateChange(cb: () => void): void {
+  stateChangeCallback = cb;
+}
+
+export async function showUpdatePrompt(): Promise<void> {
+  if (state.phase !== 'update-available' || !pendingInfo) return;
+  await onUpdateAvailable(pendingInfo);
+}
+
+export async function showInstallPrompt(): Promise<void> {
+  if (state.phase !== 'downloaded' || !pendingInfo) return;
+  await onUpdateDownloaded(pendingInfo);
+}
 
 function describeReleaseNotes(notes: UpdateInfo['releaseNotes']): string {
   if (!notes) return '';
@@ -48,12 +81,16 @@ export async function initUpdater(): Promise<void> {
   }
 
   autoUpdater.on('update-available', (info) => {
+    pendingInfo = info;
+    setState({ phase: 'update-available', version: info.version });
     void onUpdateAvailable(info);
   });
 
   autoUpdater.on('update-not-available', (info) => {
+    const silent = state.silent;
     log.info('no update available', info?.version);
-    if (currentCheckSilent) return;
+    setState({ phase: 'idle' });
+    if (silent) return;
     void dialog.showMessageBox({
       type: 'info',
       message: "You're up to date",
@@ -65,15 +102,20 @@ export async function initUpdater(): Promise<void> {
 
   autoUpdater.on('download-progress', (p) => {
     log.info(`download ${p.percent.toFixed(1)}% (${p.transferred}/${p.total})`);
+    setState({ phase: 'downloading', percent: p.percent });
   });
 
   autoUpdater.on('update-downloaded', (info) => {
+    pendingInfo = info;
+    setState({ phase: 'downloaded', version: info.version });
     void onUpdateDownloaded(info);
   });
 
   autoUpdater.on('error', (err) => {
+    const silent = state.silent;
     log.error('autoUpdater error:', err);
-    if (currentCheckSilent) return;
+    setState({ phase: 'idle' });
+    if (silent) return;
     void dialog.showMessageBox({
       type: 'error',
       message: 'Update check failed',
@@ -85,9 +127,11 @@ export async function initUpdater(): Promise<void> {
 }
 
 async function onUpdateAvailable(info: UpdateInfo): Promise<void> {
+  const silent = state.silent;
   const settings = await loadSettings();
-  if (currentCheckSilent && info.version === settings.update.skippedVersion) {
+  if (silent && info.version === settings.update.skippedVersion) {
     log.info(`silent check: user skipped ${info.version}, suppressing dialog`);
+    setState({ phase: 'idle' });
     return;
   }
 
@@ -108,15 +152,19 @@ async function onUpdateAvailable(info: UpdateInfo): Promise<void> {
   if (response === 1) {
     await updateSettings({ update: { skippedVersion: info.version } });
     log.info(`user skipped version ${info.version}`);
+    setState({ phase: 'idle' });
   } else if (response === 2) {
     log.info(`user accepted download of ${info.version}`);
+    setState({ phase: 'downloading', percent: 0 });
     try {
       await autoUpdater.downloadUpdate();
     } catch (err) {
       log.error('downloadUpdate failed:', err);
+      setState({ phase: 'idle' });
     }
   } else {
     log.info(`user dismissed update prompt for ${info.version}`);
+    setState({ phase: 'idle' });
   }
 }
 
@@ -139,6 +187,11 @@ async function onUpdateDownloaded(info: UpdateInfo): Promise<void> {
 }
 
 export async function checkForUpdates(opts: { silent: boolean }): Promise<void> {
+  if (state.phase !== 'idle') {
+    log.info(`checkForUpdates: skipped (phase=${state.phase})`);
+    return;
+  }
+
   if (!app.isPackaged && !devUpdateConfigPath()) {
     log.info('checkForUpdates: skipped (no dev-app-update.yml in dev mode)');
     if (!opts.silent) {
@@ -153,10 +206,11 @@ export async function checkForUpdates(opts: { silent: boolean }): Promise<void> 
     return;
   }
 
-  currentCheckSilent = opts.silent;
+  setState({ phase: 'checking', silent: opts.silent });
   try {
     await autoUpdater.checkForUpdates();
   } catch (err) {
     log.error('checkForUpdates failed:', err);
+    setState({ phase: 'idle' });
   }
 }
