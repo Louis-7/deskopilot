@@ -10,7 +10,7 @@ export interface Logger {
 const VALID_LEVELS = new Set(['silly', 'debug', 'verbose', 'info', 'warn', 'error']);
 
 function resolveLevel(): 'silly' | 'debug' | 'verbose' | 'info' | 'warn' | 'error' {
-  const env = process.env['DESKOPILOT_LOG_LEVEL'];
+  const env = process.env['LOG_LEVEL'];
   if (env && VALID_LEVELS.has(env)) return env as 'info';
   return 'info';
 }
