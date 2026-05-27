@@ -4,6 +4,8 @@ import { handlePetProtocol, registerPetProtocolScheme } from './pet-protocol';
 import { attachIpc, sendActivePet } from './ipc';
 import { startEventPipeline, type PipelineHandle } from './runtime';
 import { createTray, destroyTray } from './tray';
+import { initUpdater, checkForUpdates } from './updater';
+import { loadSettings } from './settings';
 import { getLogger } from './logger';
 
 const log = getLogger('runtime');
@@ -32,6 +34,16 @@ app.whenReady().then(async () => {
   }
 
   createTray({ window: win });
+
+  try {
+    await initUpdater();
+    const settings = await loadSettings();
+    if (settings.update.autoCheckOnStartup) {
+      void checkForUpdates({ silent: true });
+    }
+  } catch (err) {
+    log.error('updater init failed:', err);
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createPetWindow();

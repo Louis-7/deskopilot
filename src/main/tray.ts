@@ -15,6 +15,7 @@ import {
   userPetsDir,
   type PetRegistryEntry,
 } from './pets/registry';
+import { checkForUpdates } from './updater';
 import { getLogger } from './logger';
 
 const log = getLogger('tray');
@@ -79,6 +80,13 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
       label: 'Open pets folder…',
       click: () => {
         void shell.openPath(userPetsDir());
+      },
+    },
+    { type: 'separator' },
+    {
+      label: 'Check for Updates…',
+      click: () => {
+        void checkForUpdates({ silent: false });
       },
     },
     { type: 'separator' },

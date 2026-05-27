@@ -6,6 +6,10 @@
   "author": "Louis Liu",
   "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Louis-7/deskopilot.git"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
