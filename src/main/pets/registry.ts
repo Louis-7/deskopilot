@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { copyFile, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
@@ -39,7 +39,13 @@ export function userPetsDir(): string {
 export async function loadRegistry(): Promise<RegistryFile> {
   const path = registryPath();
   if (!existsSync(path)) {
-    return { version: 1, activePetId: 'default', pets: {} };
+    const bundled = join(app.getAppPath(), 'resources', 'registry.json');
+    if (existsSync(bundled)) {
+      await mkdir(dirname(path), { recursive: true });
+      await copyFile(bundled, path);
+    } else {
+      return { version: 1, activePetId: 'default', pets: {} };
+    }
   }
   try {
     const raw = await readFile(path, 'utf8');

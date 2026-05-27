@@ -116,17 +116,8 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
   ]);
 }
 
-/**
- * Always includes "default" (the bundled built-in) even if the registry is
- * empty — the first run on a fresh machine has no userData/registry yet.
- */
 function collectPets(registered: Record<string, PetRegistryEntry>): Array<{ id: string; name: string }> {
-  const out = [{ id: 'default', name: 'Default' }];
-  for (const entry of Object.values(registered)) {
-    if (entry.id === 'default') continue;
-    out.push({ id: entry.id, name: entry.name });
-  }
-  return out;
+  return Object.values(registered).map((entry) => ({ id: entry.id, name: entry.name }));
 }
 
 export function destroyTray(): void {

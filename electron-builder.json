@@ -15,8 +15,8 @@
   ],
   "extraResources": [
     {
-      "from": "pets/default",
-      "to": "pets/default",
+      "from": "pets/calico",
+      "to": "pets/calico",
       "filter": ["**/*"]
     }
   ],

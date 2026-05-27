@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "activePetId": "calico",
+  "pets": {
+    "calico": {
+      "id": "calico",
+      "name": "Calico",
+      "installedAt": 0,
+      "root": "builtin",
+      "hashes": {
+        "manifest": "b3821ac44159ba355ea108554e300269107031df4e46db36227ab6e5f99ea5b6",
+        "spritesheet": "6a3e1031fec5263a91aef9e31167e649dcd2b66911a7d697c4a737ed13b67b9c"
+      },
+      "builtin": true
+    }
+  }
+}
