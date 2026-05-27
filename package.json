@@ -1,11 +1,15 @@
 {
   "name": "Deskopilot",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.2",
   "description": "Your desktop pet companion.",
   "main": "out/main/index.js",
   "author": "Louis Liu",
   "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Louis-7/deskopilot.git"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",

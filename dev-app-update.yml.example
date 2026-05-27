@@ -1,0 +1,15 @@
+provider: github
+owner: Louis-7
+repo: deskopilot
+
+# To enable auto-update testing in `npm run dev`:
+#   1. cp dev-app-update.yml.example dev-app-update.yml
+#   2. Lower the version in package.json (e.g. 0.0.1-alpha.0) so a published
+#      release on GitHub appears as "newer".
+#   3. Ensure the target release is *published* (not draft) on GitHub.
+#   4. Run `npm run dev` — the tray "Check for Updates…" item will hit the
+#      real GitHub feed and show the update dialog.
+#
+# Note: in dev mode, downloads land in app.getPath('userData')/__update__
+# and `quitAndInstall()` will fail (no installer to launch). Use a packaged
+# build to validate the install step end-to-end.

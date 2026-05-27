@@ -5,3 +5,4 @@ dist/
 *.log
 .vite/
 .claude/settings.local.json
+dev-app-update.yml
