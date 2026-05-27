@@ -1,6 +1,6 @@
 {
   "name": "Deskopilot",
-  "version": "0.0.1-beta.2",
+  "version": "0.0.1",
   "description": "Your desktop pet companion.",
   "main": "out/main/index.js",
   "author": "Louis Liu",
