@@ -22,6 +22,14 @@ import {
   showUpdatePrompt,
   showInstallPrompt,
 } from './updater';
+import {
+  isPreventingSleep,
+  startPreventSleep,
+  stopPreventSleep,
+  isKeepingActive,
+  startKeepActive,
+  stopKeepActive,
+} from './caffeinate';
 import { getLogger } from './logger';
 
 const log = getLogger('tray');
@@ -107,6 +115,27 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
       label: 'Open pets folder…',
       click: () => {
         void shell.openPath(userPetsDir());
+      },
+    },
+    { type: 'separator' },
+    {
+      label: 'Prevent Sleep',
+      type: 'checkbox',
+      checked: isPreventingSleep(),
+      click: () => {
+        if (isPreventingSleep()) stopPreventSleep();
+        else startPreventSleep();
+        void rebuild();
+      },
+    },
+    {
+      label: 'Keep Active',
+      type: 'checkbox',
+      checked: isKeepingActive(),
+      click: () => {
+        if (isKeepingActive()) stopKeepActive();
+        else startKeepActive();
+        void rebuild();
       },
     },
     { type: 'separator' },
