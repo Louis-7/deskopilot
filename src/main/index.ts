@@ -6,6 +6,7 @@ import { startEventPipeline, type PipelineHandle } from './runtime';
 import { createTray, destroyTray } from './tray';
 import { initUpdater, checkForUpdates } from './updater';
 import { loadSettings } from './settings';
+import { stopAll as stopCaffeinate } from './caffeinate';
 import { getLogger } from './logger';
 
 const log = getLogger('runtime');
@@ -51,6 +52,7 @@ app.whenReady().then(async () => {
 });
 
 app.on('before-quit', async () => {
+  stopCaffeinate();
   destroyTray();
   if (pipeline) await pipeline.stop();
 });
