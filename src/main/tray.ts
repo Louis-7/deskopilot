@@ -3,7 +3,6 @@ import {
   BrowserWindow,
   Menu,
   nativeImage,
-  shell,
   Tray,
   type MenuItemConstructorOptions,
 } from 'electron';
@@ -12,7 +11,6 @@ import { IPC } from '@shared/types';
 import {
   loadRegistry,
   setActivePet,
-  userPetsDir,
   type PetRegistryEntry,
 } from './pets/registry';
 import {
@@ -110,13 +108,6 @@ async function buildMenu(deps: TrayDeps, rebuild: () => Promise<void>): Promise<
     { label: `Deskopilot · ${activeId}`, enabled: false },
     { type: 'separator' },
     { label: 'Pet', submenu: petsSubmenu },
-    { type: 'separator' },
-    {
-      label: 'Open pets folder…',
-      click: () => {
-        void shell.openPath(userPetsDir());
-      },
-    },
     { type: 'separator' },
     {
       label: 'Prevent Sleep',
