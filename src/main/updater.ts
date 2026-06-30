@@ -78,6 +78,15 @@ export async function initUpdater(): Promise<void> {
       autoUpdater.forceDevUpdateConfig = true;
       log.info(`dev update config enabled: ${devCfg}`);
     }
+  } else {
+    // Use GitHub's /releases/latest/download alias instead of the default GitHub
+    // provider's atom-feed lookup: the atom feed exposes draft releases (their
+    // tag is public), which causes the updater to 404 on the draft's assets.
+    // /releases/latest/ redirects server-side to the latest non-draft release.
+    autoUpdater.setFeedURL({
+      provider: 'generic',
+      url: 'https://github.com/Louis-7/deskopilot/releases/latest/download',
+    });
   }
 
   autoUpdater.on('update-available', (info) => {
