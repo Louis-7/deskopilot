@@ -26,14 +26,14 @@
     "@types/adm-zip": "^0.5.8",
     "@types/node": "^22.10.0",
     "@types/pngjs": "^6.0.5",
-    "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^33.2.0",
-    "electron-builder": "^25.1.8",
-    "electron-vite": "^2.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^42.5.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
     "pngjs": "^7.0.0",
     "typescript": "^5.7.2",
-    "vite": "^5.4.11",
-    "vitest": "^2.1.8"
+    "vite": "^7.3.6",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "adm-zip": "^0.5.17",
